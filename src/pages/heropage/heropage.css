@@ -1,0 +1,89 @@
+/* App.css */
+.hero {
+  display: flex;
+  /* border: 2px solid; */
+  /* flex-wrap: wrap-reverse; */
+}
+.option {
+  border-right: 2px solid black;
+  margin: 5%;
+  padding-right: 50px;
+}
+.option div {
+  /* border: 2px solid; */
+  margin: 10px;
+  padding: 2px 20px;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+.option div a{
+    color: black;
+    text-decoration: none;
+   }
+.option div:hover {
+  translate: 10px;
+  transform: scale(100px);
+}
+.carousel {
+  /* position: relative; */
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* align-items: center; */
+  margin-top: 50px;
+  width: 70%;
+  /* border: 3px solid; */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.9);
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 16px;
+}
+
+.image-container img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  transition: opacity 0.5s ease-in-out;
+  border-radius: 16px;
+}
+
+.dots-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  margin: 0 5px;
+  background-color: #bbb;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: red;
+}
+
+.dot:hover {
+  background-color: rgb(252, 37, 37);
+}
+
+@media (max-width:1200px) {
+  .hero {
+    flex-wrap: wrap-reverse;
+    justify-content: space-evenly;
+  }
+  .carousel {
+  width: 100%;
+}
+.option{
+  display: flex;
+  flex-wrap: wrap;
+  border: none;
+  justify-content: space-evenly;
+  border-bottom: 2px solid ;
+  padding-bottom: 30px;
+}
+}

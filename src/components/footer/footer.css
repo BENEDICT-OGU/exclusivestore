@@ -1,0 +1,41 @@
+.footer{
+    margin-top: 50px;
+    padding-bottom: 50px;
+    background-color: black;
+    padding-top: 20px;
+
+}
+
+.foot{
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+
+}
+.foot h1{
+    padding-bottom: 20px;
+    color: white;
+
+}
+.foot h2{
+    padding-bottom: 20px;
+    color: white;
+
+}
+.foot p{
+    padding-bottom: 30px;
+    color: white;
+
+}
+.copyright{
+   justify-content: center;
+   color: white;
+   padding-top: 30px;
+   text-align: center;
+}
+
+input{
+    background-color: transparent;
+    height: 15%;
+}
