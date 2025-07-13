@@ -1,41 +1,147 @@
-.footer{
-    margin-top: 50px;
-    padding-bottom: 50px;
-    background-color: black;
-    padding-top: 20px;
-
+.footer {
+  background-color: #f8f8f8;
+  color: #333;
+  padding: 4rem 2rem 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.foot{
-    display: flex;
-    justify-content: space-evenly;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-
-}
-.foot h1{
-    padding-bottom: 20px;
-    color: white;
-
-}
-.foot h2{
-    padding-bottom: 20px;
-    color: white;
-
-}
-.foot p{
-    padding-bottom: 30px;
-    color: white;
-
-}
-.copyright{
-   justify-content: center;
-   color: white;
-   padding-top: 30px;
-   text-align: center;
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
 }
 
-input{
-    background-color: transparent;
-    height: 15%;
+.footer-section {
+  margin-bottom: 2rem;
+}
+
+.footer-logo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+.footer-subtitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #444;
+}
+
+.footer-text {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.subscribe-form {
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+.email-input {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.email-input:focus {
+  border-color: #555;
+}
+
+.subscribe-btn {
+  background-color: #333;
+  color: white;
+  border: none;
+  padding: 0 1rem;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subscribe-btn:hover {
+  background-color: #555;
+}
+
+.social-icons {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-icon {
+  color: #666;
+  font-size: 1.2rem;
+  transition: color 0.3s;
+}
+
+.social-icon:hover {
+  color: #333;
+}
+
+.footer-heading {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #222;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.8rem;
+}
+
+.footer-links a {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: #222;
+  text-decoration: underline;
+}
+
+.footer-divider {
+  height: 1px;
+  background-color: #ddd;
+  margin: 2rem 0;
+}
+
+.copyright {
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+  padding-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .footer-section:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+  }
 }

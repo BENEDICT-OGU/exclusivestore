@@ -1,264 +1,472 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./navbar.css";
-import ProductCard from "../itemcard/productcard/productcard";
 
 const NavBar = () => {
-  const [likes, setLikes] = useState(0);
-  const [liked, setLiked] = useState(false);
-  const [animate, setAnimate] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
-  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
-  const [username, setUsername] = useState("");
+  // Authentication state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
-  const [cartItems, setCartItems] = useState([]); // Cart items state
-  // const [cartItems, setCartItems] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isLoginView, setIsLoginView] = useState(true);
+  const [authForm, setAuthForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [authError, setAuthError] = useState("");
 
-  const addToCart = (item) => {
-    setCartItems((prevItems) => [...prevItems, item]); // Add item to the cart
+  // Cart state
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+
+  // Dark mode state
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Sample products
+  const products = [
+    {
+      id: 1,
+      name: "Minimalist Chair",
+      price: 349,
+      image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3"
+    },
+    {
+      id: 2,
+      name: "Leather Portfolio",
+      price: 199,
+      image: "https://images.unsplash.com/photo-1542643408-57d7aed70b48?ixlib=rb-4.0.3"
+    }
+  ];
+
+  // Load data from localStorage on initial render
+  useEffect(() => {
+    const savedUser = localStorage.getItem("ecommerceUser");
+    const savedCart = localStorage.getItem("ecommerceCart");
+    const savedDarkMode = localStorage.getItem("ecommerceDarkMode");
+
+    if (savedUser) {
+      setIsLoggedIn(true);
+      setUserData(JSON.parse(savedUser));
+    }
+
+    if (savedCart) {
+      setCartItems(JSON.parse(savedCart));
+    }
+
+    if (savedDarkMode) {
+      setDarkMode(savedDarkMode === "true");
+      document.body.classList.toggle("dark-mode", savedDarkMode === "true");
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("ecommerceCart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // Toggle dark mode and save to localStorage
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem("ecommerceDarkMode", newDarkMode.toString());
+    document.body.classList.toggle("dark-mode", newDarkMode);
   };
 
-  const toggleLike = () => {
-    setLikes(liked ? likes - 1 : likes + 1);
-    setLiked(!liked);
-    setAnimate(true);
-
-    setTimeout(() => setAnimate(false), 300);
+  // Handle auth form input changes
+  const handleAuthInputChange = (e) => {
+    const { name, value } = e.target;
+    setAuthForm({
+      ...authForm,
+      [name]: value
+    });
   };
 
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
+  // Handle login
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setAuthError("");
 
-  const toggleCartModal = () => {
-    setIsCartModalOpen(!isCartModalOpen); // Toggle cart modal visibility
-  };
+    // Basic validation
+    if (!authForm.email || !authForm.password) {
+      setAuthError("Please fill in all fields");
+      return;
+    }
 
-  const toggleMenuModal = () => {
-    setIsMenuModalOpen(!isMenuModalOpen);
-  };
-  const handleLogin = (user) => {
-    setUsername(user);
+    // In a real app, you would call your API here
+    // For demo purposes, we'll just simulate a successful login
+    const user = {
+      name: "Demo User",
+      email: authForm.email
+    };
+
     setIsLoggedIn(true);
-    setIsModalOpen(false);
+    setUserData(user);
+    localStorage.setItem("ecommerceUser", JSON.stringify(user));
+    setAuthModalOpen(false);
+    setAuthForm({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: ""
+    });
   };
 
+  // Handle signup
+  const handleSignup = (e) => {
+    e.preventDefault();
+    setAuthError("");
+
+    // Basic validation
+    if (!authForm.name || !authForm.email || !authForm.password) {
+      setAuthError("Please fill in all fields");
+      return;
+    }
+
+    if (authForm.password !== authForm.confirmPassword) {
+      setAuthError("Passwords don't match");
+      return;
+    }
+
+    // In a real app, you would call your API here
+    const user = {
+      name: authForm.name,
+      email: authForm.email
+    };
+
+    setIsLoggedIn(true);
+    setUserData(user);
+    localStorage.setItem("ecommerceUser", JSON.stringify(user));
+    setAuthModalOpen(false);
+    setAuthForm({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: ""
+    });
+  };
+
+  // Handle logout
   const handleLogout = () => {
-    setUsername("");
     setIsLoggedIn(false);
+    setUserData(null);
+    localStorage.removeItem("ecommerceUser");
   };
 
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
+  // Cart functions
+  const addToCart = (product) => {
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevItems.map(item =>
+          item.id === product.id 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevItems, { ...product, quantity: 1 }];
+    });
   };
 
-  // const addToCart = (item) => {
-  //   setCartItems([...cartItems, item]); // Add item to cart
-  // };
+  const removeFromCart = (productId) => {
+    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    setCartItems(prevItems =>
+      prevItems.map(item =>
+        item.id === productId ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
+
+  const cartTotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   return (
-    <nav>
-      <h1>EXCLUSIVE</h1>
-      <ul>
-        <li>
-          <a href="#">Home</a>
-        </li>
-        <li>
-          <a href="#">Shop</a>
-        </li>
-        <li>
-          <a href="#">About</a>
-        </li>
-        <li>
-          <a href="#">Blog</a>
-        </li>
-        <li>
-          <a href="#">Contact</a>
-        </li>
-        <li>
-          <a href="#">Pages</a>
-        </li>
-      </ul>
-      
+    <>
+      <nav className={`navbar ${darkMode ? "dark" : ""}`}>
+        <div className="navbar-container">
+          {/* Logo */}
+          <div className="navbar-logo">
+            <h1>EXCLUSIVE</h1>
+          </div>
 
-      <span className="span-sign-cart-like">
-        {isLoggedIn ? (
-          <p className="username">{`Welcome, ${username}`}</p>
-        ) : (
-          <p
-            className="sign-in"
-            onClick={toggleModal}
-            style={{ cursor: "pointer" }}
-          >
-            <svg
-              width="13"
-              height="12"
-              viewBox="0 0 13 12"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M6.49969 6C7.29534 6 8.05841 5.68393 8.62102 5.12132C9.18362 4.55871 9.49969 3.79565 9.49969 3C9.49969 2.20435 9.18362 1.44129 8.62102 0.87868C8.05841 0.316071 7.29534 0 6.49969 0C5.70405 0 4.94098 0.316071 4.37837 0.87868C3.81577 1.44129 3.49969 2.20435 3.49969 3C3.49969 3.79565 3.81577 4.55871 4.37837 5.12132C4.94098 5.68393 5.70405 6 6.49969 6ZM8.49969 3C8.49969 3.53043 8.28898 4.03914 7.91391 4.41421C7.53884 4.78929 7.03013 5 6.49969 5C5.96926 5 5.46055 4.78929 5.08548 4.41421C4.71041 4.03914 4.49969 3.53043 4.49969 3C4.49969 2.46957 4.71041 1.96086 5.08548 1.58579C5.46055 1.21071 5.96926 1 6.49969 1C7.03013 1 7.53884 1.21071 7.91391 1.58579C8.28898 1.96086 8.49969 2.46957 8.49969 3ZM12.4997 11C12.4997 12 11.4997 12 11.4997 12H1.49969C1.49969 12 0.499695 12 0.499695 11C0.499695 10 1.49969 7 6.49969 7C11.4997 7 12.4997 10 12.4997 11ZM11.4997 10.996C11.4987 10.75 11.3457 10.01 10.6677 9.332C10.0157 8.68 8.78869 8 6.49969 8C4.20969 8 2.98369 8.68 2.33169 9.332C1.65369 10.01 1.50169 10.75 1.49969 10.996H11.4997Z"
-                fill="#23A6F0"
-              />
-            </svg>
-            Login / Register
-          </p>
-        )}
+          {/* Desktop Navigation */}
+          <ul className="navbar-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Shop</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
 
-        <p onClick={toggleSearch} style={{ cursor: "pointer" }}>
-          <svg
-            width="17"
-            height="16"
-            viewBox="0 0 17 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12.2426 10.3441C13.2109 9.02279 13.6446 7.38459 13.4569 5.75725C13.2692 4.12991 12.474 2.63344 11.2304 1.56723C9.98671 0.501022 8.38634 -0.0562959 6.74943 0.00677721C5.11252 0.0698504 3.55978 0.748663 2.40186 1.90741C1.24394 3.06615 0.566243 4.61938 0.504341 6.25633C0.44244 7.89329 1.0009 9.49326 2.068 10.7361C3.1351 11.979 4.63214 12.7732 6.25961 12.9597C7.88709 13.1462 9.52497 12.7113 10.8456 11.7421H10.8446C10.8746 11.7821 10.9066 11.8201 10.9426 11.8571L14.7926 15.7071C14.9801 15.8947 15.2345 16.0002 15.4997 16.0003C15.765 16.0004 16.0195 15.8951 16.2071 15.7076C16.3947 15.5201 16.5002 15.2657 16.5003 15.0005C16.5004 14.7352 16.3951 14.4807 16.2076 14.2931L12.3576 10.4431C12.3218 10.4069 12.2834 10.3735 12.2426 10.3431V10.3441ZM12.5006 6.5001C12.5006 7.22237 12.3583 7.93757 12.0819 8.60486C11.8055 9.27215 11.4004 9.87847 10.8897 10.3892C10.379 10.8999 9.77264 11.305 9.10535 11.5814C8.43806 11.8578 7.72286 12.0001 7.00059 12.0001C6.27832 12.0001 5.56312 11.8578 4.89583 11.5814C4.22854 11.305 3.62223 10.8999 3.11151 10.3892C2.60078 9.87847 2.19566 9.27215 1.91926 8.60486C1.64285 7.93757 1.50059 7.22237 1.50059 6.5001C1.50059 5.04141 2.08006 3.64246 3.11151 2.61101C4.14296 1.57956 5.5419 1.0001 7.00059 1.0001C8.45928 1.0001 9.85823 1.57956 10.8897 2.61101C11.9211 3.64246 12.5006 5.04141 12.5006 6.5001Z"
-              fill="#23A6F0"
-            />
-          </svg>
-        </p>
-
-        {/* Cart Icon */}
-        <p
-          className="cart"
-          onClick={toggleCartModal}
-          style={{ cursor: "pointer" }}
-        >
-          <svg
-            width="16"
-            height="15"
-            viewBox="0 0 16 15"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0.500305 0.5C0.500305 0.367392 0.552984 0.240215 0.646752 0.146447C0.74052 0.0526784 0.867697 0 1.00031 0H2.50031C2.61184 3.08115e-05 2.72016 0.0373507 2.80804 0.106025C2.89592 0.174699 2.95831 0.270784 2.98531 0.379L3.39031 2H15.0003C15.0737 2.00007 15.1462 2.0163 15.2127 2.04755C15.2791 2.0788 15.3378 2.12429 15.3847 2.1808C15.4316 2.23731 15.4654 2.30345 15.4838 2.37452C15.5023 2.44558 15.5048 2.51984 15.4913 2.592L13.9913 10.592C13.9699 10.7066 13.909 10.8101 13.8194 10.8846C13.7297 10.9591 13.6169 10.9999 13.5003 11H4.50031C4.38374 10.9999 4.27087 10.9591 4.18122 10.8846C4.09156 10.8101 4.03075 10.7066 4.00931 10.592L2.51031 2.607L2.11031 1H1.00031C0.867697 1 0.74052 0.947322 0.646752 0.853553C0.552984 0.759785 0.500305 0.632608 0.500305 0.5ZM3.60231 3L4.91531 10H13.0853L14.3983 3H3.60231ZM5.50031 11C4.96987 11 4.46116 11.2107 4.08609 11.5858C3.71102 11.9609 3.50031 12.4696 3.50031 13C3.50031 13.5304 3.71102 14.0391 4.08609 14.4142C4.46116 14.7893 4.96987 15 5.50031 15C6.03074 15 6.53945 14.7893 6.91452 14.4142C7.28959 14.0391 7.50031 13.5304 7.50031 13C7.50031 12.4696 7.28959 11.9609 6.91452 11.5858C6.53945 11.2107 6.03074 11 5.50031 11ZM12.5003 11C11.9699 11 11.4612 11.2107 11.0861 11.5858C10.711 11.9609 10.5003 12.4696 10.5003 13C10.5003 13.5304 10.711 14.0391 11.0861 14.4142C11.4612 14.7893 11.9699 15 12.5003 15C13.0307 15 13.5394 14.7893 13.9145 14.4142C14.2896 14.0391 14.5003 13.5304 14.5003 13C14.5003 12.4696 14.2896 11.9609 13.9145 11.5858C13.5394 11.2107 13.0307 11 12.5003 11ZM5.50031 12C5.76552 12 6.01988 12.1054 6.20741 12.2929C6.39495 12.4804 6.50031 12.7348 6.50031 13C6.50031 13.2652 6.39495 13.5196 6.20741 13.7071C6.01988 13.8946 5.76552 14 5.50031 14C5.23509 14 4.98073 13.8946 4.7932 13.7071C4.60566 13.5196 4.50031 13.2652 4.50031 13C4.50031 12.7348 4.60566 12.4804 4.7932 12.2929C4.98073 12.1054 5.23509 12 5.50031 12ZM12.5003 12C12.7655 12 13.0199 12.1054 13.2074 12.2929C13.3949 12.4804 13.5003 12.7348 13.5003 13C13.5003 13.2652 13.3949 13.5196 13.2074 13.7071C13.0199 13.8946 12.7655 14 12.5003 14C12.2351 14 11.9807 13.8946 11.7932 13.7071C11.6057 13.5196 11.5003 13.2652 11.5003 13C11.5003 12.7348 11.6057 12.4804 11.7932 12.2929C11.9807 12.1054 12.2351 12 12.5003 12Z"
-              fill="#23A6F0"
-            />
-          </svg>
-        </p>
-
-        <p
-          className={`like-icon ${animate ? "explode" : ""}`}
-          onClick={toggleLike}
-          style={{ cursor: "pointer" }}
-        >
-          <svg
-            width="17"
-            height="16"
-            viewBox="0 0 17 16"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M8.5 2.748L7.783 2.011C6.1 0.281 3.014 0.878 1.9 3.053 1.377 4.076 1.259 5.553 2.214 7.438 3.134 9.253 5.048 11.427 8.5 13.795 11.952 11.427 13.865 9.253 14.786 7.438 15.741 5.552 15.624 4.076 15.1 3.053 13.986 0.878 10.9 0.28 9.217 2.01L8.5 2.748Z"
-              fill={liked ? "red" : "white"} // Fills inside when clicked
-              stroke="skyblue"
-              strokeWidth="1.5"
-            />
-          </svg>
-          {likes}
-        </p>
-      </span>
-      <button className="menu-button" onClick={toggleMenuModal}>≡</button>
-      {showSearch && (
-        <div className="search-bar">
-          <input type="text" placeholder="Search..." />
-        </div>
-      )}
-
-      {/* Sign Up Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Sign Up</h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleLogin(e.target.username.value);
-              }}
-            >
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                required
-              />
-              <input type="email" name="email" placeholder="Email" required />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                required
-              />
-              <button type="submit">Sign Up</button>
-            </form>
-            <button className="close-modal" onClick={toggleModal}>
-              Close
+          {/* Icons */}
+          <div className="navbar-icons">
+            {/* Dark mode toggle */}
+            <button className="dark-mode-toggle" onClick={toggleDarkMode}>
+              {darkMode ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 2V4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 20V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M4.93 4.93L6.34 6.34" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M17.66 17.66L19.07 19.07" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 12H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M20 12H22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M4.93 19.07L6.34 17.66" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M17.66 6.34L19.07 4.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
             </button>
+
+            {/* User/auth */}
+            {isLoggedIn ? (
+              <div className="user-dropdown">
+                <button className="user-icon">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 17V15C16 13.9391 15.5786 12.9217 14.8284 12.1716C14.0783 11.4214 13.0609 11 12 11H8C6.93913 11 5.92172 11.4214 5.17157 12.1716C4.42143 12.9217 4 13.9391 4 15V17M10 9C11.6569 9 13 7.65685 13 6C13 4.34315 11.6569 3 10 3C8.34315 3 7 4.34315 7 6C7 7.65685 8.34315 9 10 9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="username">{userData?.name}</span>
+                </button>
+                <div className="dropdown-content">
+                  <a href="#">My Account</a>
+                  <a href="#">Orders</a>
+                  <button onClick={handleLogout}>Logout</button>
+                </div>
+              </div>
+            ) : (
+              <button className="login-btn" onClick={() => setAuthModalOpen(true)}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 17V15C16 13.9391 15.5786 12.9217 14.8284 12.1716C14.0783 11.4214 13.0609 11 12 11H8C6.93913 11 5.92172 11.4214 5.17157 12.1716C4.42143 12.9217 4 13.9391 4 15V17M10 9C11.6569 9 13 7.65685 13 6C13 4.34315 11.6569 3 10 3C8.34315 3 7 4.34315 7 6C7 7.65685 8.34315 9 10 9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Login</span>
+              </button>
+            )}
+
+            {/* Cart */}
+            <button className="cart-icon" onClick={() => setIsCartOpen(true)}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 1H1V3H3L3.6 5M5 11H15L19 3H3.6M5 11L3.6 5M5 11L2.70711 13.2929C2.07714 13.9229 2.52331 15 3.41421 15H15M15 15C13.8954 15 13 15.8954 13 17C13 18.1046 13.8954 19 15 19C16.1046 19 17 18.1046 17 17C17 15.8954 16.1046 15 15 15ZM7 17C7 18.1046 6.10457 19 5 19C3.89543 19 3 18.1046 3 17C3 15.8954 3.89543 15 5 15C6.10457 15 7 15.8954 7 17Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {cartItems.length > 0 && (
+                <span className="cart-badge">
+                  {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                </span>
+              )}
+            </button>
+
+            {/* Mobile menu button */}
+            <button className="mobile-menu-btn">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Auth Modal */}
+      {authModalOpen && (
+        <div className={`modal-overlay ${darkMode ? "dark" : ""}`}>
+          <div className="auth-modal">
+            <button className="close-modal" onClick={() => setAuthModalOpen(false)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            <h2>{isLoginView ? "Login" : "Create Account"}</h2>
+
+            {authError && <div className="auth-error">{authError}</div>}
+
+            <form onSubmit={isLoginView ? handleLogin : handleSignup}>
+              {!isLoginView && (
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={authForm.name}
+                    onChange={handleAuthInputChange}
+                    placeholder="Your name"
+                    required
+                  />
+                </div>
+              )}
+
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={authForm.email}
+                  onChange={handleAuthInputChange}
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={authForm.password}
+                  onChange={handleAuthInputChange}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              {!isLoginView && (
+                <div className="form-group">
+                  <label>Confirm Password</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={authForm.confirmPassword}
+                    onChange={handleAuthInputChange}
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              )}
+
+              <button type="submit" className="auth-submit-btn">
+                {isLoginView ? "Login" : "Sign Up"}
+              </button>
+            </form>
+
+            <div className="auth-switch">
+              {isLoginView ? (
+                <p>
+                  Don't have an account?{" "}
+                  <button type="button" onClick={() => setIsLoginView(false)}>
+                    Sign up
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Already have an account?{" "}
+                  <button type="button" onClick={() => setIsLoginView(true)}>
+                    Login
+                  </button>
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Cart Modal - Sliding Effect */}
-      <div className={`cart-modal ${isCartModalOpen ? "open" : ""}`}>
-        <div className="cart-header">
-          <h2>Your Cart</h2>
-          <button onClick={toggleCartModal} className="close-modal">
-            X
-          </button>
-        </div>
-        <div className="cart-items">
-          {cartItems.length > 0 ? (
-            <ul>
-              {cartItems.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>Your cart is empty.</p>
+      {/* Shopping Cart */}
+      <div className={`cart-overlay ${isCartOpen ? "open" : ""} ${darkMode ? "dark" : ""}`}>
+        <div className="cart-container">
+          <div className="cart-header">
+            <h2>Your Cart</h2>
+            <button className="close-cart" onClick={() => setIsCartOpen(false)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <div className="cart-items">
+            {cartItems.length === 0 ? (
+              <div className="empty-cart">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.70711 15.2929C4.07714 15.9229 4.52331 17 5.41421 17H17M17 17C15.8954 17 15 17.8954 15 19C15 20.1046 15.8954 21 17 21C18.1046 21 19 20.1046 19 19C19 17.8954 18.1046 17 17 17ZM9 19C9 20.1046 8.10457 21 7 21C5.89543 21 5 20.1046 5 19C5 17.8954 5.89543 17 7 17C8.10457 17 9 17.8954 9 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <p>Your cart is empty</p>
+              </div>
+            ) : (
+              <>
+                {cartItems.map(item => (
+                  <div key={item.id} className="cart-item">
+                    <div className="item-image">
+                      <img src={item.image} alt={item.name} />
+                    </div>
+                    <div className="item-details">
+                      <h3>{item.name}</h3>
+                      <p>${item.price.toFixed(2)}</p>
+                      <div className="quantity-controls">
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          −
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <button 
+                      className="remove-item" 
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+
+          {cartItems.length > 0 && (
+            <div className="cart-footer">
+              <div className="cart-total">
+                <span>Subtotal</span>
+                <span>${cartTotal.toFixed(2)}</span>
+              </div>
+              <button className="checkout-btn">Proceed to Checkout</button>
+              <button className="continue-shopping" onClick={() => setIsCartOpen(false)}>
+                Continue Shopping
+              </button>
+            </div>
+          )}
+
+          {cartItems.length === 0 && (
+            <div className="suggested-products">
+              <h3>You might like</h3>
+              <div className="product-grid">
+                {products.slice(0, 2).map(product => (
+                  <div key={product.id} className="product-card">
+                    <div className="product-image">
+                      <img src={product.image} alt={product.name} />
+                    </div>
+                    <div className="product-info">
+                      <h4>{product.name}</h4>
+                      <p>${product.price.toFixed(2)}</p>
+                      <button 
+                        className="add-to-cart-btn"
+                        onClick={() => {
+                          addToCart(product);
+                        }}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-        <div className="cart-footer">
-          <button>Proceed to Checkout</button>
-        </div>
       </div>
-
-
-      <div className={`menu-modal ${isMenuModalOpen ? "open" : ""}`}>
-        <div className="menu-header">
-          <button onClick={toggleMenuModal} className="close-modal">
-            X
-          </button>
-        </div>
-        
-        <div className="menu-ul">
-        <ul>
-        <li>
-          <a href="#">Home</a>
-        </li>
-        <li>
-          <a href="#">Shop</a>
-        </li>
-        <li>
-          <a href="#">About</a>
-        </li>
-        <li>
-          <a href="#">Blog</a>
-        </li>
-        <li>
-          <a href="#">Contact</a>
-        </li>
-        <li>
-          <a href="#">Pages</a>
-        </li>
-      </ul>
-        </div>
-      </div>
-    </nav>
+    </>
   );
 };
 
